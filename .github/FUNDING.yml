@@ -1,0 +1,14 @@
+# Configuração de financiamento/patrocínio
+
+# Substitua pelos seus usernames/links reais
+github: # seu-usuario-github
+patreon: # seu-usuario-patreon
+open_collective: # seu-open-collective
+ko_fi: # seu-ko-fi
+tidelift: # "npm/package-name"
+community_bridge: # project-name
+liberapay: # seu-liberapay
+issuehunt: # seu-issuehunt
+otechie: # seu-otechie
+lfx_crowdfunding: # project-name
+custom: # ["https://paypal.me/seu-paypal", "https://www.buymeacoffee.com/seu-usuario"]

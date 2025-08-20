@@ -1,0 +1,21 @@
+{
+  "name": "Meus Medicamentos",
+  "short_name": "Medicamentos",
+  "description": "Controle inteligente de medicações e vitaminas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4361ee",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pharmacy-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "productivity"],
+  "lang": "pt-BR",
+  "dir": "ltr"
+}

@@ -1,0 +1,93 @@
+name: 🏷️ Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 🔧 Install dependencies
+      run: npm ci
+
+    - name: 🏗️ Build project
+      run: npm run build
+      env:
+        VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+        VITE_API_BASE_URL: ${{ secrets.PRODUCTION_API_URL }}
+
+    - name: 📝 Generate changelog
+      id: changelog
+      run: |
+        # Gerar changelog baseado nos commits desde a última tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+        echo "## 🚀 Changes since $PREVIOUS_TAG" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        git log --pretty=format:"- %s (%an)" $PREVIOUS_TAG..HEAD >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## 📊 Stats" >> CHANGELOG.md
+        echo "- **Commits:** $(git rev-list --count $PREVIOUS_TAG..HEAD)" >> CHANGELOG.md
+        echo "- **Contributors:** $(git shortlog -sn $PREVIOUS_TAG..HEAD | wc -l)" >> CHANGELOG.md
+
+    - name: 📦 Create ZIP archive
+      run: |
+        zip -r meus-medicamentos-${{ github.ref_name }}.zip \
+          dist/ \
+          server/ \
+          README.md \
+          LICENSE \
+          package.json \
+          --exclude "server/node_modules/*" "server/.env"
+
+    - name: 🏷️ Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: 🚀 Meus Medicamentos ${{ github.ref_name }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+
+    - name: 📤 Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./meus-medicamentos-${{ github.ref_name }}.zip
+        asset_name: meus-medicamentos-${{ github.ref_name }}.zip
+        asset_content_type: application/zip
+
+    - name: 🚀 Deploy to production
+      run: |
+        echo "Deploying version ${{ github.ref_name }} to production"
+        # Adicionar comandos de deploy específicos aqui
+
+    - name: 📢 Notify release
+      uses: 8398a7/action-slack@v3
+      with:
+        status: 'success'
+        text: |
+          🎉 Nova versão lançada!
+          **Versão:** ${{ github.ref_name }}
+          **Link:** ${{ steps.create_release.outputs.html_url }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: success()
